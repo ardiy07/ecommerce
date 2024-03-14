@@ -53,9 +53,9 @@ class AuthController extends Controller
         } catch (ValidationException $e) {
             return response()->json(['error' => $e->errors()], 422);
         } catch (QueryException $e) {
-            return response()->json(['error' => 'Internal Server Error', 'error' => $e->getMessage()], 500);
+            return response()->json(['error' => 'Internal Server Error'], 500);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Internal Server Error', 'error' => $e->getMessage()], 500);
+            return response()->json(['error' => 'Internal Server Error'], 500);
         }
     }
 
@@ -69,7 +69,7 @@ class AuthController extends Controller
         $credentials = request(['email', 'password']);
 
         if (!$token = auth()->attempt($credentials)) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return response()->json(['error' => 'Email atau Password Salah'], 401);
         }
 
         return $this->respondWithToken($token);
@@ -94,7 +94,7 @@ class AuthController extends Controller
     {
         auth()->logout();
 
-        return response()->json(['message' => 'Successfully logged out']);
+        return response()->json(['message' => 'Berhasil Logout']);
     }
 
     /**
