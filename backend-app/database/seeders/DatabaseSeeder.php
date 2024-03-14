@@ -22,7 +22,10 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             AdminSeeder::class,
             MerchantSeeder::class,
-            BuyerSeeder::class
+            BuyerSeeder::class,
+            StoreSeeder::class,
+            CategoryProductSeeder::class,
+            ProductSeeder::class
         ]);
     }
 }

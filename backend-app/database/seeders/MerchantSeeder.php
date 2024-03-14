@@ -21,6 +21,12 @@ class MerchantSeeder extends Seeder
                 'username' => 'merchant1',
                 'email' => 'merchant@gmail.com',
                 'password' => Hash::make('merchant123')
+            ],
+            [
+                'name' => 'merchant2',
+                'username' => 'merchant2',
+                'email' => 'merchant2@gmail.com',
+                'password' => Hash::make('merchant123')
             ]
         ];
 
