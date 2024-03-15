@@ -8,11 +8,8 @@ use App\Http\Requests\Product\UpdateProductRequest;
 use App\Http\Resources\ApiResourceColection;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
-use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\ValidationException;
 
 class ProductController extends Controller
 {
@@ -24,7 +21,7 @@ class ProductController extends Controller
         try {
             $search = $request->input('search');
             $limit = $request->input('limit', 10);
-            $page = 1; 
+            $page = 1;
 
             // Jika ada kriteria pencarian, filter hasil berdasarkan pencarian
             if ($search) {
@@ -47,7 +44,7 @@ class ProductController extends Controller
             $expensiveProducts = new ApiResourceColection(ProductResource::collection($products), 'failed');
             return $expensiveProducts->response()->setStatusCode(200);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Internal Server Error'], 500);
+            return response()->json(['Message' => 'Internal Server Error'], 500);
         }
     }
 
@@ -61,16 +58,16 @@ class ProductController extends Controller
             $imagePath = $request->file('image')->store('public/images/products');
             $imageUrl = Storage::url($imagePath);
 
-            
+
             // Buat produk baru
             $product = Product::create([
-                'name_product' => $request->input('name_product'),
+                'name_product' => $request->name_product,
                 'image' => $imageUrl,
-                'price' => $request->input('price'),
-                'stock' => $request->input('stock'),
-                'description' => $request->input('description'),
+                'price' => $request->price,
+                'stock' => $request->stock,
+                'description' => $request->description,
                 'store_id' => auth()->user()->store->id,
-                'category_product_id' => $request->input('category_product_id')
+                'category_product_id' => $request->category_product_id
             ]);
 
             // Ambil produk baru
@@ -80,7 +77,6 @@ class ProductController extends Controller
             return (new ProductResource($productWithRelations))
                 ->response()
                 ->setStatusCode(201);
-
         } catch (\Exception $e) {
             return response()->json(['error' => 'Internal Server Error'], 500);
         }
@@ -107,42 +103,37 @@ class ProductController extends Controller
     {
         try {
             $product = Product::findOrFail($id);
-
-            if($product->store_id !== auth()->user()->store->id)
-            {
-                return response()->json(['error' => 'Unauthorized'], 401);
-            }
-
             // Cek apakah ada file gambar yang diupload
-        if ($request->hasFile('image')) {
-            // Hapus gambar sebelumnya dari penyimpanan
-            Storage::delete($product->image);
+            if ($request->hasFile('image')) {
+                // Hapus gambar sebelumnya dari penyimpanan
+                Storage::delete($product->image);
 
-            // Simpan gambar baru ke penyimpanan dan dapatkan URL-nya
-            $imagePath = $request->file('image')->store('public/images/products');
-            $imageUrl = Storage::url($imagePath);
+                // Simpan gambar baru ke penyimpanan dan dapatkan URL-nya
+                $imagePath = $request->file('image')->store('public/images/products');
+                $imageUrl = Storage::url($imagePath);
 
-            // Update produk dengan gambar baru
-            $product->update([
-                'name_product' => $request->input('name_product'),
-                'image' => $imageUrl,
-                'price' => $request->input('price'),
-                'stock' => $request->input('stock'),
-                'description' => $request->input('description'),
-                'category_product_id' => $request->input('category_product_id')
-            ]);
-        } else {
-            // Jika tidak ada gambar yang diupload, hanya update data lainnya
-            $product->update([
-                'name_product' => $request->input('name_product'),
-                'price' => $request->input('price'),
-                'stock' => $request->input('stock'),
-                'description' => $request->input('description'),
-                'category_product_id' => $request->input('category_product_id')
-            ]);
-        }
+                // Update produk dengan gambar baru
+                $product->update([
+                    'name_product' => $request->name_product,
+                    'image' => $imageUrl,
+                    'price' => $request->price,
+                    'stock' => $request->stock,
+                    'description' => $request->description,
+                    'category_product_id' => $request->category_product_id
+                ]);
+            } else {
+                // Jika tidak ada gambar yang diupload, hanya update data lainnya
+                $product->update([
+                    'name_product' => $request->name_product,
+                    'price' => $request->price,
+                    'stock' => $request->stock,
+                    'description' => $request->description,
+                    'category_product_id' => $request->category_product_id
+                ]);
+            }
             return response()->json(['status' => 'Sukses', 'data' => $product], 200);
-        } catch (\Exception $e) {
+        } 
+        catch (\Exception $e) {
             return response()->json(['error' => 'Internal Server Error'], 500);
         }
     }
@@ -154,8 +145,7 @@ class ProductController extends Controller
     {
         try {
             $product = Product::findOrFail($id);
-            if($product->store_id !== auth()->user()->store->id)
-            {
+            if ($product->store_id !== auth()->user()->store->id) {
                 return response()->json(['message' => 'Tidak ada akses'], 401);
             }
             $product->delete();

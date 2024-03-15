@@ -15,11 +15,15 @@ class UpdateProductRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        $productId = $this->route('id');
-        $product = Product::findOrFail($productId);
-        $isMerchant = auth()->user()->hasRole('merchant');
-        $isMatchingStore = $product->store_id === auth()->user()->store->id;   
-        return $isMerchant && $isMatchingStore;
+        try{
+            $productId = $this->route('id');
+            $product = Product::findOrFail($productId);
+            $isMerchant = auth()->user()->hasRole('merchant');
+            $isMatchingStore = $product->store_id === auth()->user()->store->id;   
+            return $isMerchant && $isMatchingStore;
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return false;
+        }
     }
 
     /**
@@ -33,7 +37,7 @@ class UpdateProductRequest extends FormRequest
             'name_product' => 'required|string|max:255',
             'price' => 'required|numeric',
             'stock' => 'required|integer',
-            'description' => 'nullable|string',
+            'description' => 'required|string',
             'category_product_id' => 'required|exists:category_products,id',
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
         ];
