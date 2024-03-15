@@ -15,8 +15,8 @@ class StoreResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'name_store' => $this->name_store,
             'store_id' => $this->id,
+            'name_store' => $this->name_store,
             'products' => $this->whenLoaded('product', function () {
                 return [
                     'data_product' => $this->product->map(function ($product) {

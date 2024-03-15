@@ -20,7 +20,7 @@ class StoreController extends Controller
         return $expensiveStores->response()->setStatusCode(200);
     }
 
-    public function show($id)
+    public function show(string $id)
     {
         try {
             $store = Store::with('product')->findOrFail($id);
@@ -31,7 +31,7 @@ class StoreController extends Controller
         }
     }
 
-    public function create(Request $request)
+    public function store(Request $request)
     {
         try {
             // Validasi Input
@@ -68,7 +68,7 @@ class StoreController extends Controller
         }
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request,string $id)
     {
         try {
             // Cek store
@@ -103,7 +103,7 @@ class StoreController extends Controller
         }
     }
 
-    public function destroy($id)
+    public function destroy(string $id)
     {
         if (!is_numeric($id) || $id <= 0) {
             return response()->json(['error' => 'Invalid store ID'], 400);
