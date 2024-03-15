@@ -26,7 +26,7 @@ class StoreController extends Controller
             $store = Store::with('product')->findOrFail($id);
             $expensiveStore = new StoreResource($store);
             return $expensiveStore->response()->setStatusCode(200);
-        } catch (\Throwable $th) {
+        } catch (\Exception $e) {
             return response()->json(['status' => 'failed', 'message' => 'Data Tidak Ditemukan'], 404);
         }
     }
@@ -63,8 +63,6 @@ class StoreController extends Controller
             return response()->json(['status' => 'Sukses', 'data' => $store], 201);
         } catch (ValidationException $e) {
             return response()->json(['error' => $e->errors()], 422);
-        } catch (QueryException $e) {
-            return response()->json(['error' => 'Internal Server Error'], 500);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Internal Server Error'], 500);
         }
@@ -100,8 +98,6 @@ class StoreController extends Controller
 
         } catch (ValidationException $e) {
             return response()->json(['error' => $e->errors()], 422);
-        } catch (QueryException $e) {
-            return response()->json(['error' => 'Internal Server Error'], 500);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Internal Server Error'], 500);
         }
