@@ -3,13 +3,11 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Store\StoreRequest;
+use App\Http\Requests\Store\UpdateStoreRequest;
 use App\Http\Resources\ApiResourceColection;
 use App\Http\Resources\StoreResource;
 use App\Models\Store;
-use Illuminate\Database\QueryException;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\ValidationException;
 
 class StoreController extends Controller
 {
@@ -31,19 +29,9 @@ class StoreController extends Controller
         }
     }
 
-    public function store(Request $request)
+    public function store(StoreRequest $request)
     {
         try {
-            // Validasi Input
-            $validator = Validator::make($request->all(), [
-                'name_store' => 'required|string|max:100|unique:stores,name_store'
-            ]);
-
-            // Jika validasi gagal
-            if ($validator->fails()) {
-                throw new ValidationException($validator);
-            }
-
             // Menyimpan store
             $store = Store::create([
                 'name_store' => $request->name_store,
@@ -61,33 +49,16 @@ class StoreController extends Controller
             $user->assignRole('merchant');
 
             return response()->json(['status' => 'Sukses', 'data' => $store], 201);
-        } catch (ValidationException $e) {
-            return response()->json(['error' => $e->errors()], 422);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Internal Server Error'], 500);
         }
     }
 
-    public function update(Request $request,string $id)
+    public function update(UpdateStoreRequest $request,string $id)
     {
         try {
             // Cek store
             $store = Store::findOrFail($id);
-
-            // Cek kepemilikan store
-            if ($store->user_id !== auth()->user()->id) {
-                return response()->json(['error' => 'Unauthorized'], 401);
-            }
-
-            // Validasi Input
-            $validator = Validator::make($request->all(), [
-                'name_store' => 'required|string|max:100|unique:stores,name_store'
-            ]);
-
-            // Jika validasi gagal
-            if ($validator->fails()) {
-                throw new ValidationException($validator);
-            }
 
             //  Update Store
             $store->update([
@@ -96,8 +67,6 @@ class StoreController extends Controller
 
             return response()->json(['status' => 'Sukses', 'data' => $store], 200);
 
-        } catch (ValidationException $e) {
-            return response()->json(['error' => $e->errors()], 422);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Internal Server Error'], 500);
         }
@@ -105,10 +74,6 @@ class StoreController extends Controller
 
     public function destroy(string $id)
     {
-        if (!is_numeric($id) || $id <= 0) {
-            return response()->json(['error' => 'Invalid store ID'], 400);
-        }
-
         try {
             $store = Store::findOrFail($id);
             $store->delete();
