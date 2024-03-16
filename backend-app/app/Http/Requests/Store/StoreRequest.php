@@ -12,7 +12,7 @@ class StoreRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return Auth::check() && Auth::user()->hasRole('merchant');
+        return Auth::check() && Auth::user()->hasRole('buyer');
     }
 
     /**

@@ -8,12 +8,15 @@ use App\Http\Requests\Store\UpdateStoreRequest;
 use App\Http\Resources\ApiResourceColection;
 use App\Http\Resources\StoreResource;
 use App\Models\Store;
+use Illuminate\Http\Request;
 
 class StoreController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $stores = Store::with('product')->get();
+        $limit = $request->input('limit', 10);
+        $page = 1;
+        $stores = Store::with('product')->paginate($limit, ['*'], 'page', $page);;
         $expensiveStores = new ApiResourceColection(StoreResource::collection($stores), 'failed');
         return $expensiveStores->response()->setStatusCode(200);
     }
@@ -50,7 +53,7 @@ class StoreController extends Controller
 
             return response()->json(['status' => 'Sukses', 'data' => $store], 201);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Internal Server Error'], 500);
+            return response()->json(['message' => 'Internal Server Error'], 500);
         }
     }
 
@@ -59,16 +62,16 @@ class StoreController extends Controller
         try {
             // Cek store
             $store = Store::findOrFail($id);
+            $store->lockForUpdate();
 
             //  Update Store
-            $store->update([
-                'name_store' => $request->name_store
-            ]);
+            $store->fill($request->all());
+            $store->save();
 
             return response()->json(['status' => 'Sukses', 'data' => $store], 200);
 
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Internal Server Error'], 500);
+            return response()->json(['message' => 'Internal Server Error'], 500);
         }
     }
 
@@ -79,7 +82,7 @@ class StoreController extends Controller
             $store->delete();
             return response()->json(['message' => 'Store Berhasil di Hapus'], 200);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Store Tidak Ditemukan'], 404);
+            return response()->json(['message' => 'Store Tidak Ditemukan'], 404);
         }
     }
 }
