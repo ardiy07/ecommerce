@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\ProductController;
+use App\Http\Controllers\API\ReviewController;
 use App\Http\Controllers\API\StoreController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
