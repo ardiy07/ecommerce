@@ -44,7 +44,7 @@ class ProductController extends Controller
             $expensiveProducts = new ApiResourceColection(ProductResource::collection($products), 'failed');
             return $expensiveProducts->response()->setStatusCode(200);
         } catch (\Exception $e) {
-            return response()->json(['Message' => 'Internal Server Error'], 500);
+            return response()->json(['message' => 'Internal Server Error'], 500);
         }
     }
 
@@ -58,17 +58,9 @@ class ProductController extends Controller
             $imagePath = $request->file('image')->store('public/images/products');
             $imageUrl = Storage::url($imagePath);
 
-
+            $productData = array_merge($request->except(['image']), ['store_id' => auth()->user()->store->id], ['image' => $imageUrl]);
             // Buat produk baru
-            $product = Product::create([
-                'name_product' => $request->name_product,
-                'image' => $imageUrl,
-                'price' => $request->price,
-                'stock' => $request->stock,
-                'description' => $request->description,
-                'store_id' => auth()->user()->store->id,
-                'category_product_id' => $request->category_product_id
-            ]);
+            $product = Product::create($productData);
 
             // Ambil produk baru
             $productWithRelations = Product::with(['store', 'category'])->find($product->id);
@@ -78,7 +70,7 @@ class ProductController extends Controller
                 ->response()
                 ->setStatusCode(201);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Internal Server Error'], 500);
+            return response()->json(['message' => 'Internal Server Error'], 500);
         }
     }
 
@@ -103,38 +95,26 @@ class ProductController extends Controller
     {
         try {
             $product = Product::findOrFail($id);
+            $product->lockForUpdate();
             // Cek apakah ada file gambar yang diupload
             if ($request->hasFile('image')) {
                 // Hapus gambar sebelumnya dari penyimpanan
-                Storage::delete($product->image);
-
+                if ($product->image) {
+                    Storage::delete($product->image);
+                }
                 // Simpan gambar baru ke penyimpanan dan dapatkan URL-nya
                 $imagePath = $request->file('image')->store('public/images/products');
                 $imageUrl = Storage::url($imagePath);
-
                 // Update produk dengan gambar baru
-                $product->update([
-                    'name_product' => $request->name_product,
-                    'image' => $imageUrl,
-                    'price' => $request->price,
-                    'stock' => $request->stock,
-                    'description' => $request->description,
-                    'category_product_id' => $request->category_product_id
-                ]);
-            } else {
-                // Jika tidak ada gambar yang diupload, hanya update data lainnya
-                $product->update([
-                    'name_product' => $request->name_product,
-                    'price' => $request->price,
-                    'stock' => $request->stock,
-                    'description' => $request->description,
-                    'category_product_id' => $request->category_product_id
-                ]);
+                $product->image = $imageUrl;
             }
+            // Update data lainnya
+            $product->fill($request->except('image'));
+            $product->save();
+
             return response()->json(['status' => 'Sukses', 'data' => $product], 200);
-        } 
-        catch (\Exception $e) {
-            return response()->json(['error' => 'Internal Server Error'], 500);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Internal Server Error'], 500);
         }
     }
 
@@ -151,7 +131,7 @@ class ProductController extends Controller
             $product->delete();
             return response()->json(['message' => 'Product Berhasil di Hapus'], 200);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Product Tidak Ditemukan'], 404);
+            return response()->json(['message' => 'Product Tidak Ditemukan'], 404);
         }
     }
 }

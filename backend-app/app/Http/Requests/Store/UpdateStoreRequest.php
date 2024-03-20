@@ -17,7 +17,7 @@ class UpdateStoreRequest extends FormRequest
             $storeId = $this->route('id');
             $store = Store::findOrFail($storeId);
             $isMerchant = Auth::user()->hasRole('merchant');
-            $isMatchingStore = $store->store_id === auth()->user()->store->id;
+            $isMatchingStore = $store->id === auth()->user()->store->id;
             return $isMerchant && $isMatchingStore;
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return false;
